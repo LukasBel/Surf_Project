@@ -3,6 +3,7 @@ module main
 go 1.21.1
 
 require (
+	github.com/LukasBel/Surf_Project v0.0.0-20231108152406-feee06f1a5da // indirect
 	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/gofiber/fiber/v2 v2.50.0 // indirect
 	github.com/google/uuid v1.3.1 // indirect
