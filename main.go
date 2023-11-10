@@ -26,6 +26,7 @@ type SurfSpot struct {
 func (r *Repository) CreateSpot(c *fiber.Ctx) error {
 	spotModel := SurfSpot{}
 	err := c.BodyParser(&spotModel)
+
 	if err != nil {
 		c.Status(http.StatusUnprocessableEntity).JSON(&fiber.Map{"message": "something went wrong"})
 		return err
@@ -45,6 +46,7 @@ func (r *Repository) CreateSpot(c *fiber.Ctx) error {
 func (r *Repository) GetSpots(c *fiber.Ctx) error {
 	spotModels := &[]models.SurfSpots{}
 	err := r.DB.Find(&spotModels).Error
+
 	if err != nil {
 		c.Status(http.StatusUnprocessableEntity).JSON(&fiber.Map{"message": "failed to get surf spots"})
 		return err
@@ -53,9 +55,29 @@ func (r *Repository) GetSpots(c *fiber.Ctx) error {
 	return nil
 }
 
+func (r *Repository) GetSpotByID(c *fiber.Ctx) error {
+	id := c.Params("id")
+	spotModel := &models.SurfSpots{}
+
+	if id == "" {
+		c.Status(http.StatusUnprocessableEntity).JSON(&fiber.Map{"message": "empty ID"})
+		return nil
+	}
+
+	err := r.DB.Where("id = ?", id).First(&spotModel).Error
+	if err != nil {
+		c.Status(http.StatusBadRequest).JSON(&fiber.Map{"message": "failed to retrieve spot"})
+		return err
+	}
+	WavePowerResponse(spotModel)
+
+	c.Status(http.StatusOK).JSON(&fiber.Map{"message": "spot found successfully", "data": spotModel})
+	return nil
+
+}
+
 func (r *Repository) DeleteSpot(c *fiber.Ctx) error {
 	id := c.Params("id")
-
 	surfModel := &models.SurfSpots{}
 
 	if id == "" {
@@ -74,11 +96,38 @@ func (r *Repository) DeleteSpot(c *fiber.Ctx) error {
 
 }
 
+func (r *Repository) UpdateSpot(c *fiber.Ctx) error {
+	id := c.Params("id")
+	spotModel := &models.SurfSpots{}
+	newModel := SurfSpot{}
+
+	err := c.BodyParser(&newModel)
+	if err != nil {
+		return err
+	}
+
+	if id == "" {
+		c.Status(http.StatusUnprocessableEntity).JSON(&fiber.Map{"message": "empty ID"})
+		return nil
+	}
+	err = r.DB.Model(spotModel).Where("id = ?", id).Updates(newModel).Error
+
+	if err != nil {
+		c.Status(http.StatusBadRequest).JSON(&fiber.Map{"message": "failed to update spot"})
+		return err
+	}
+
+	c.Status(http.StatusOK).JSON(&fiber.Map{"message": "spot updated successfully", "data": spotModel})
+	return nil
+}
+
 func (r *Repository) SetUpRoutes(App *fiber.App) {
 	api := App.Group("/api")
 	api.Get("/spots", r.GetSpots)
+	api.Get("/spot/:id", r.GetSpotByID)
 	api.Post("/create_spot", r.CreateSpot)
 	api.Delete("/delete/:id", r.DeleteSpot)
+	api.Put("/update/:id", r.UpdateSpot)
 }
 
 func main() {
