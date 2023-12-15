@@ -13,3 +13,11 @@ func WavePowerResponse(spot *models.SurfSpots) (int, error) {
 		spot.WaveHeight, swellPeriod, spot.WavePower*swellPeriod)
 	return spot.WavePower * swellPeriod, nil
 }
+
+// this function does not work
+func RankSpots(spots *[]models.SurfSpots) error {
+	spots = &[]models.SurfSpots{}
+	//sort.Slice(&spots, func(i, j int) bool { return spots[i].WavePower < spots[j].WavePower })
+	fmt.Println(spots)
+	return nil
+}

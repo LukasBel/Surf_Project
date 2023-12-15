@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
 	"gorm.io/gorm"
@@ -9,6 +10,7 @@ import (
 	"main/storage"
 	"net/http"
 	"os"
+	"time"
 )
 
 type Repository struct {
@@ -16,16 +18,18 @@ type Repository struct {
 }
 
 type SurfSpot struct {
-	Name       string `json:"name"`
-	Type       string `json:"type"`
-	WaveHeight string `json:"waveHeight"`
-	WavePower  int    `json:"wavePower"`
-	SkillLevel string `json:"skillLevel"`
+	Name       string    `json:"name"`
+	Type       string    `json:"type"`
+	WaveHeight string    `json:"waveHeight"`
+	WavePower  int       `json:"wavePower"`
+	SkillLevel string    `json:"skillLevel"`
+	CreatedAt  time.Time `json:"createdAt"`
 }
 
 func (r *Repository) CreateSpot(c *fiber.Ctx) error {
 	spotModel := SurfSpot{}
 	err := c.BodyParser(&spotModel)
+	spotModel.CreatedAt = time.Now()
 
 	if err != nil {
 		c.Status(http.StatusUnprocessableEntity).JSON(&fiber.Map{"message": "something went wrong"})
@@ -121,10 +125,18 @@ func (r *Repository) UpdateSpot(c *fiber.Ctx) error {
 	return nil
 }
 
+func (r *Repository) GetRanks(c *fiber.Ctx) error {
+	spotModels := &[]models.SurfSpots{}
+	fmt.Println(RankSpots(spotModels))
+	c.Status(http.StatusOK).JSON(&fiber.Map{"message": "spots ranked successfully", "data": spotModels})
+	return nil
+}
+
 func (r *Repository) SetUpRoutes(App *fiber.App) {
 	api := App.Group("/api")
 	api.Get("/spots", r.GetSpots)
 	api.Get("/spot/:id", r.GetSpotByID)
+	api.Get("/ranks", r.GetRanks) //function does not work
 	api.Post("/create_spot", r.CreateSpot)
 	api.Delete("/delete/:id", r.DeleteSpot)
 	api.Put("/update/:id", r.UpdateSpot)
