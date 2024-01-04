@@ -174,5 +174,9 @@ func main() {
 
 	app := fiber.New()
 	r.SetUpRoutes(app)
-	app.Listen(":8080")
+
+	err = app.Listen(":8080")
+	if err != nil {
+		log.Fatal("Failed to start server")
+	}
 }
