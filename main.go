@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 	"log"
 	"main/models"
+	"main/scrapers"
 	"main/storage"
 	"net/http"
 	"os"
@@ -174,6 +175,8 @@ func main() {
 
 	app := fiber.New()
 	r.SetUpRoutes(app)
+
+	fmt.Println(scrapers.WebScraper())
 
 	err = app.Listen(":8080")
 	if err != nil {
